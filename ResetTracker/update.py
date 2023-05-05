@@ -17,7 +17,7 @@ def unzip(path):
 def downloadSource():
     response1 = requests.get("https://api.github.com/repos/pncakespoon1/ResetTracker/releases/latest")
     releaseTag = response1.json()["name"]
-    URL = "https://github.com/pncakespoon1/ResetTracker/archive/refs/tags/" + releaseTag + "/.zip"
+    URL = "https://github.com/pncakespoon1/ResetTracker/archive/refs/tags/" + releaseTag + ".zip"
     os.makedirs("temp/update/", exist_ok=True)
     response2 = wget.download(URL, "temp/update/ResetTracker2.zip")
 
@@ -47,14 +47,20 @@ def updateSource():
     newConfigFile.close()
     json.dump(newConfig, open('temp/update/ResetTracker2/data/config.json', 'w'))
 
-    shutil.move('assets/databaseCredentials.json', 'temp/update/ResetTracker2/assets/databaseCredentials.json')
-    shutil.rmtree('assets')
     shutil.rmtree('data')
-    shutil.rmtree('scripts')
 
-    shutil.move('temp/update/ResetTracker2/assets', '.')
+    files = os.listdir(".")
+    for file in files:
+        if file != "databaseCredentials.json":
+            os.remove(file)
+
     shutil.move('temp/update/ResetTracker2/data', '.')
-    shutil.move('temp/update/ResetTracker2/scripts', '.')
+
+    files = os.listdir("temp/update/ResetTracker2")
+    for file in files:
+        if "." in file:
+            shutil.move('temp/update/ResetTracker2/' + file, '.')
+    
     os.remove('temp/update/ResetTracker2.zip')
     shutil.rmtree('temp/update/ResetTracker2')
 
@@ -103,7 +109,6 @@ def updateExe():
 
 
 def update():
-    os.chdir("..")
     if getattr(sys, 'frozen', False):  # if running in a PyInstaller bundle
         updateExe()
     else:
